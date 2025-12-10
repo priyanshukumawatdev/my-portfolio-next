@@ -6548,7 +6548,7 @@ button.animate-btn::after,
   }
 }
 
-.preloader {
+/* .preloader {
   width: 100vw;
   height: 100vh;
   position: fixed;
@@ -6558,7 +6558,7 @@ button.animate-btn::after,
   --preloader-clip: 0;
   clip-path: inset(0 0 0 var(--preloader-clip));
   background-color: var(--black);
-}
+} */
 .preloader span {
   font-size: 80px;
   font-weight: 800;

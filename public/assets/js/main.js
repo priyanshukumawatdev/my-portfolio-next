@@ -1,17 +1,18 @@
 /**
- * Go Top
- * Infinite Slide
- * Update Clock
- * Cursor Trail
- * Counter
- * Scroll Link
- * Setting Color
- * Open Menu
- * Click Active
+ * Next.js Safe version of main.js
+ * Ensures jQuery plugins run AFTER hydration
  */
 
 (function ($) {
     "use strict";
+
+    const runWhenReady = (callback) => {
+        if (document.readyState === "complete") {
+            callback();
+        } else {
+            window.addEventListener("load", callback);
+        }
+    };
 
     /* Go Top
     -------------------------------------------------------------------------*/
@@ -29,8 +30,7 @@
             $borderProgress.css("--progress-angle", progressAngle + "deg");
 
             var windowBottom = scrollTop + $(window).height();
-            var hasFooter = $footer.length > 0;
-            var footerOffset = hasFooter ? $footer.offset().top : Infinity;
+            var footerOffset = $footer.length ? $footer.offset().top : Infinity;
 
             if (scrollTop > 100 && windowBottom < footerOffset) {
                 $goTop.addClass("show");
@@ -43,10 +43,11 @@
             $("html, body").animate({ scrollTop: 0 }, 100);
         });
     };
-    /* Infinite Slide 
+
+    /* Infinite Slide
     -------------------------------------------------------------------------*/
     var infiniteSlide = function () {
-        if ($(".infiniteSlide").length > 0) {
+        if ($(".infiniteSlide").length > 0 && $.fn.infiniteslide) {
             $(".infiniteSlide").each(function () {
                 var $this = $(this);
                 var style = $this.data("style") || "left";
@@ -61,6 +62,7 @@
             });
         }
     };
+
     /* Update Clock
     -------------------------------------------------------------------------*/
     var updateClock = () => {
@@ -75,16 +77,19 @@
             updateClock();
             setInterval(updateClock, 1000);
         }
-
         startClocks(".clock");
     };
+
     /* Cursor Trail
     -------------------------------------------------------------------------*/
     var cursorTrail = () => {
         const canvas = document.getElementById("trail");
+        if (!canvas) return;
+
         const ctx = canvas.getContext("2d");
         let w = window.innerWidth,
             h = window.innerHeight;
+
         canvas.width = w;
         canvas.height = h;
 
@@ -131,7 +136,7 @@
                 ctx.stroke();
             }
 
-            ripples.forEach((r, i) => {
+            ripples.forEach((r) => {
                 ctx.beginPath();
                 ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
                 ctx.strokeStyle = `rgba(255,255,255,${r.alpha})`;
@@ -146,7 +151,8 @@
         }
         draw();
     };
-    /* Counter Odo
+
+    /* Counter
     -------------------------------------------------------------------------*/
     var counterOdo = () => {
         function isElementInViewport($el) {
@@ -156,6 +162,7 @@
             var viewportBottom = viewportTop + $(window).height();
             return bottom > viewportTop && top < viewportBottom;
         }
+
         if ($(".counter-scroll").length > 0) {
             $(window).on("scroll", function () {
                 $(".wg-counter").each(function () {
@@ -163,7 +170,7 @@
                     if (isElementInViewport($counter) && !$counter.hasClass("counted")) {
                         $counter.addClass("counted");
                         var targetNumber = $counter.find(".odometer").data("number");
-                        setTimeout(function () {
+                        setTimeout(() => {
                             $counter.find(".odometer").text(targetNumber);
                         }, 0);
                     }
@@ -171,7 +178,8 @@
             });
         }
     };
-    /* Setting Color
+
+    /* Setting color
     -------------------------------------------------------------------------*/
     const settingColor = () => {
         if (!$(".settings-color").length) return;
@@ -195,39 +203,39 @@
         function setColor(index) {
             $("body").attr("data-color-primary", "color-primary-" + index);
         }
-
         function setActiveItem(index) {
             $(".choose-item").removeClass("active").eq(index).addClass("active");
         }
     };
-    /* Open Menu
+
+    /* Menu
     -------------------------------------------------------------------------*/
     var openMbMenu = () => {
         $(".open-mb-menu").on("click", function () {
             $(".offcanvas-menu").addClass("show");
-            $("body").toggleClass("overflow-hidden");
+            $("body").addClass("overflow-hidden");
         });
 
         $(".close-mb-menu").on("click", function () {
             $(".offcanvas-menu").removeClass("show");
-            $("body").toggleClass("overflow-hidden");
+            $("body").removeClass("overflow-hidden");
         });
     };
-    /* Click Active
+
+    /* Active Button
     -------------------------------------------------------------------------*/
     var clickActive = () => {
         $(".btn-active").on("mouseenter", function () {
             var $btn = $(this);
-            if ($btn.hasClass("active")) {
-            } else {
+            if (!$btn.hasClass("active")) {
                 $(".main-action-active .btn-active").removeClass("active");
                 $btn.addClass("active");
             }
         });
     };
 
-    // Dom Ready
-    $(function () {
+    // Run AFTER hydration & window load
+    runWhenReady(() => {
         infiniteSlide();
         updateClock();
         cursorTrail();
